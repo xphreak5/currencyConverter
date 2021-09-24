@@ -1,6 +1,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import requests
+from pynput.keyboard import Key, Controller
 
 
 class Ui_MainWindow(object):
@@ -179,6 +180,7 @@ class Ui_MainWindow(object):
         font.setWeight(75)
         self.AmountInput.setFont(font)
         self.AmountInput.setObjectName("AmountInput")
+        self.AmountInput.setMaximum(100000000000.0)
 
 
 
@@ -699,7 +701,7 @@ class Ui_MainWindow(object):
         self.ClearButton.raise_()
         self.ResultLabel.raise_()
         self.SecondCurrency.raise_()
-
+        self.keyboard = Controller()
 
 
 
@@ -770,15 +772,27 @@ class Ui_MainWindow(object):
 
     
 
-        url = "https://api.exchangeratesapi.io/latest?base="
+        url = "https://api.exchangerate.host/convert?from=" + currencyText + "&to=" + currencyTextt + "&amount=" + AmountText
         if currencyText != "" and AmountText != "":
-            response = requests.get(url + currencyText)
+            response = requests.get(url)
+            
+
             json_data = response.json()
 
-            result = float(json_data["rates"][currencyTextt]) * float(AmountText.replace(",", "."))
 
+            if json_data["result"]:
+                
+                result = float(json_data["result"])
+
+            else:
+                result = 0
+
+            #result = float(json_data["rates"][currencyTextt]) * float(AmountText.replace(",", "."))
             self.typeToResultBar()
             return result, AmountText
+
+        else:
+            pass
 
     def typeToResultBar(self):
         self.ResultBar.setText(AmountText + " " + currencyText + " = " + str(result) + " " + currencyTextt)
@@ -786,8 +800,6 @@ class Ui_MainWindow(object):
     def convertButtonClicked(self):
         self.ConvertButton.clicked.connect(lambda: self.convertCurrency())
         
-
-
     def clearButtonClicked(self):
         self.ResultBar.setText("")
 
